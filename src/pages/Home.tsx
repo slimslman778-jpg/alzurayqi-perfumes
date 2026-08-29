@@ -1,3 +1,8 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -9,8 +14,12 @@ const categories = [
 ];
 
 export default function Home() {
+  // رقم صاحب المتجر الجديد مع رمز الدولة
+  const WHATSAPP_NUMBER = "967775363086";
+  const generalMessage = encodeURIComponent("مرحباً، أهلاً بك في متجر الزريقي للعطور والبخور، أرغب في الاستفسار عن منتجاتكم.");
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col relative">
       {/* Hero Section */}
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -51,10 +60,19 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-wrap justify-center gap-4"
           >
             <Link to="/category/vip" className="bg-gold-600 hover:bg-gold-500 text-white px-8 py-4 rounded-sm text-lg font-semibold transition-all duration-300 inline-block">
               تسوق الآن
             </Link>
+            <a 
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${generalMessage}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-sm text-lg font-semibold transition-all duration-300 inline-block"
+            >
+              تواصل عبر واتساب
+            </a>
           </motion.div>
         </div>
       </section>
