@@ -1,9 +1,26 @@
 import { Outlet, Link } from 'react-router-dom';
-import { ShoppingBag, Menu, X, MessageCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, X, MessageCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { db } from '../firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { Category } from '../types';
 
 export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'categories'));
+        const list = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[];
+        setCategories(list);
+      } catch (error) {
+        console.error("Error fetching categories for layout:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-gray-100 font-cairo">
@@ -16,13 +33,14 @@ export default function Layout() {
               <span className="text-sm text-gold-200 hidden sm:block">للعطور والبخور</span>
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center space-x-8 space-x-reverse">
+            {/* Desktop Nav - Dynamic from Firebase */}
+            <div className="hidden md:flex items-center space-x-6 space-x-reverse">
               <Link to="/" className="text-gray-300 hover:text-gold-400 transition-colors">الرئيسية</Link>
-              <Link to="/category/oils" className="text-gray-300 hover:text-gold-400 transition-colors">عطور زيتية</Link>
-              <Link to="/category/vip" className="text-gray-300 hover:text-gold-400 transition-colors">ماركات VIP</Link>
-              <Link to="/category/oud" className="text-gray-300 hover:text-gold-400 transition-colors">العود والبخور</Link>
-              <Link to="/category/packaging" className="text-gray-300 hover:text-gold-400 transition-colors">مستلزمات</Link>
+              {categories.map(cat => (
+                <Link key={cat.id} to={`/category/${cat.id}`} className="text-gray-300 hover:text-gold-400 transition-colors">
+                  {cat.name}
+                </Link>
+              ))}
               <Link to="/admin" className="text-gold-600 hover:text-gold-400 text-sm border border-gold-800 px-3 py-1 rounded-full transition-colors">الإدارة</Link>
             </div>
 
@@ -35,15 +53,16 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* Mobile Nav */}
+        {/* Mobile Nav - Dynamic from Firebase */}
         {isMenuOpen && (
           <div className="md:hidden bg-neutral-900 border-b border-gold-800/50">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
               <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-3 py-2 text-gray-300 hover:text-gold-400">الرئيسية</Link>
-              <Link to="/category/oils" onClick={() => setIsMenuOpen(false)} className="px-3 py-2 text-gray-300 hover:text-gold-400">عطور زيتية</Link>
-              <Link to="/category/vip" onClick={() => setIsMenuOpen(false)} className="px-3 py-2 text-gray-300 hover:text-gold-400">ماركات VIP</Link>
-              <Link to="/category/oud" onClick={() => setIsMenuOpen(false)} className="px-3 py-2 text-gray-300 hover:text-gold-400">العود والبخور</Link>
-              <Link to="/category/packaging" onClick={() => setIsMenuOpen(false)} className="px-3 py-2 text-gray-300 hover:text-gold-400">مستلزمات</Link>
+              {categories.map(cat => (
+                <Link key={cat.id} to={`/category/${cat.id}`} onClick={() => setIsMenuOpen(false)} className="px-3 py-2 text-gray-300 hover:text-gold-400">
+                  {cat.name}
+                </Link>
+              ))}
               <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="px-3 py-2 text-gold-600 hover:text-gold-400">لوحة الإدارة</Link>
             </div>
           </div>
