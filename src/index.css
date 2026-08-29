@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --font-cairo: "Cairo", sans-serif;
+  
+  --color-gold-50: #fbf8f1;
+  --color-gold-100: #f5eedc;
+  --color-gold-200: #eadbba;
+  --color-gold-300: #dcc28f;
+  --color-gold-400: #cca560;
+  --color-gold-500: #c18e3c;
+  --color-gold-600: #a77130;
+  --color-gold-700: #865629;
+  --color-gold-800: #6e4627;
+  --color-gold-900: #593922;
+}
+
+@utility font-cairo {
+  font-family: var(--font-cairo);
+}
