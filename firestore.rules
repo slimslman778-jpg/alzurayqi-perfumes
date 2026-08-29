@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Only allow specific admin email to write. 
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'alialzorike@gmail.com' || 
+        request.auth.token.email == 'slimslman778@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      ) && request.auth.token.email_verified == true;
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['name']) 
+        && data.name is string && data.name.size() <= 100
+        && (!('description' in data) || (data.description is string && data.description.size() <= 500))
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1048576));
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'price', 'categoryId'])
+        && data.name is string && data.name.size() <= 100
+        && data.price is number
+        && data.categoryId is string && isValidId(data.categoryId)
+        && (!('description' in data) || (data.description is string && data.description.size() <= 2000))
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1048576))
+        && (!('stock' in data) || data.stock is number);
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['customerName', 'customerPhone', 'customerAddress', 'status', 'totalAmount', 'createdAt'])
+        && data.customerName is string && data.customerName.size() <= 100
+        && data.customerPhone is string && data.customerPhone.size() <= 50
+        && data.customerAddress is string && data.customerAddress.size() <= 500
+        && data.status is string && data.status in ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+        && data.totalAmount is number
+        && data.createdAt == request.time;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(categoryId) && isValidCategory(incoming()) && incoming().keys().size() <= 4;
+      allow update: if isAdmin() && isValidId(categoryId) && isValidCategory(incoming());
+      allow delete: if isAdmin() && isValidId(categoryId);
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming()) && exists(/databases/$(database)/documents/categories/$(incoming().categoryId)) && incoming().keys().size() <= 7;
+      allow update: if isAdmin() && isValidId(productId) && isValidProduct(incoming());
+      allow delete: if isAdmin() && isValidId(productId);
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAdmin();
+      allow create: if isValidId(orderId) && isValidOrder(incoming()) && incoming().keys().size() <= 7;
+      allow update: if isAdmin() && isValidId(orderId) && isValidOrder(incoming());
+      allow delete: if isAdmin() && isValidId(orderId);
+    }
+
+    match /admins/{email} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
