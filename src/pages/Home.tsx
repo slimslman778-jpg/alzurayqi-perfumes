@@ -5,18 +5,38 @@
 
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
-const categories = [
-  { id: 'oils', name: 'العطور الزيتية', desc: 'زيوت خام مستنسخة من الماركات العالمية', image: 'https://images.unsplash.com/photo-1608528577891-eb055944f2e8?auto=format&fit=crop&q=80&w=800' },
-  { id: 'vip', name: 'عطور VIP والماركات', desc: 'عطور جاهزة ومعبأة بمواصفات عالية', image: 'https://images.unsplash.com/photo-1523293115678-d29062015949?auto=format&fit=crop&q=80&w=800' },
-  { id: 'oud', name: 'العود والبخور', desc: 'عود ماروكي، ظفر، وإضافات البخور', image: 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=800' },
-  { id: 'packaging', name: 'مستلزمات التعبئة', desc: 'علب زجاجية وبخاخات سعات 50مل و 100مل', image: 'https://images.unsplash.com/photo-1595642527925-4d41cb781653?auto=format&fit=crop&q=80&w=800' },
-];
+import { useState, useEffect } from 'react';
+import { db } from '../firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { Category } from '../types';
 
 export default function Home() {
-  // رقم صاحب المتجر الجديد مع رمز الدولة
+  const [categories, setCategories] = useState<Category[]>([]);
+  // رقم صاحب المتجر المعتمد
   const WHATSAPP_NUMBER = "967775363086";
   const generalMessage = encodeURIComponent("مرحباً، أهلاً بك في متجر الزريقي للعطور والبخور، أرغب في الاستفسار عن منتجاتكم.");
+
+  // سحب الأقسام ديناميكياً من قاعدة البيانات (Firebase)
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'categories'));
+        const list = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[];
+        setCategories(list);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // دالة التمرير عند الضغط على تسوق الآن
+  const scrollToCategories = () => {
+    const section = document.getElementById('categories-section');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="flex flex-col relative">
@@ -62,9 +82,12 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex flex-wrap justify-center gap-4"
           >
-            <Link to="/category/vip" className="bg-gold-600 hover:bg-gold-500 text-white px-8 py-4 rounded-sm text-lg font-semibold transition-all duration-300 inline-block">
+            <button 
+              onClick={scrollToCategories}
+              className="bg-gold-600 hover:bg-gold-500 text-white px-8 py-4 rounded-sm text-lg font-semibold transition-all duration-300 inline-block cursor-pointer"
+            >
               تسوق الآن
-            </Link>
+            </button>
             <a 
               href={`https://wa.me/${WHATSAPP_NUMBER}?text=${generalMessage}`} 
               target="_blank" 
@@ -77,41 +100,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-24 bg-neutral-950">
+      {/* Categories Section - Dynamic from Firebase */}
+      <section id="categories-section" className="py-24 bg-neutral-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gold-400 mb-4">أقسام المتجر</h2>
             <div className="w-24 h-1 bg-gold-700 mx-auto rounded-full"></div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {categories.map((cat, index) => (
-              <motion.div 
-                key={cat.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group cursor-pointer"
-              >
-                <Link to={`/category/${cat.id}`} className="block relative overflow-hidden rounded-sm aspect-[3/4]">
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-500 z-10"></div>
-                  <img 
-                    src={cat.image} 
-                    alt={cat.name} 
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 bg-gradient-to-t from-black/90 to-transparent">
-                    <h3 className="text-2xl font-bold text-gold-300 mb-2">{cat.name}</h3>
-                    <p className="text-sm text-gray-300 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                      {cat.desc}
-                    </p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+          {categories.length === 0 ? (
+            <div className="text-center text-gray-500 py-12">
+              جاري تحميل الأقسام أو لم يتم إضافة أقسام بعد...
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {categories.map((cat, index) => (
+                <motion.div 
+                  key={cat.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="group cursor-pointer"
+                >
+                  <Link to={`/category/${cat.id}`} className="block relative overflow-hidden rounded-sm aspect-[3/4]">
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-500 z-10"></div>
+                    <img 
+                      src={cat.image || "https://images.unsplash.com/photo-1608528577891-eb055944f2e8?auto=format&fit=crop&q=80&w=800"} 
+                      alt={cat.name} 
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 bg-gradient-to-t from-black/90 to-transparent">
+                      <h3 className="text-2xl font-bold text-gold-300 mb-2">{cat.name}</h3>
+                      <p className="text-sm text-gray-300 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                        {cat.description || "تصفح أحدث المنتجات في هذا القسم"}
+                      </p>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
       
