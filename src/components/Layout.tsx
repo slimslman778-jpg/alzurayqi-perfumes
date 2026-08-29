@@ -115,7 +115,7 @@ export default function Layout() {
               rel="noopener noreferrer" 
               className="text-gray-500 text-xs hover:text-gold-400 transition-colors flex flex-col items-center text-center"
             >
-              <span>تطوير وصيانة عزت السراء</span>
+              <span>تطوير وصيانة </span>
               <span className="font-sans mt-1" dir="ltr">+967 778 391 662</span>
             </a>
           </div>
