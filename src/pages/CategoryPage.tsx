@@ -77,35 +77,40 @@ export default function CategoryPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-neutral-900 border border-gold-900/30 rounded-sm overflow-hidden group hover:border-gold-700 transition-colors"
+              className="bg-neutral-900 border border-gold-900/30 rounded-sm overflow-hidden group hover:border-gold-700 transition-colors flex flex-col justify-between"
             >
-              <div className="aspect-square relative overflow-hidden bg-neutral-800">
-                {product.imageUrl ? (
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-600">بدون صورة</div>
-                )}
-                {product.stock && product.stock > 0 && product.stock < 10 && (
-                  <span className="absolute top-2 right-2 bg-red-600/90 text-white text-xs px-2 py-1 rounded-sm">
-                    كمية محدودة
-                  </span>
-                )}
+              <div>
+                <div className="aspect-square relative overflow-hidden bg-neutral-800">
+                  {product.imageUrl ? (
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-600">بدون صورة</div>
+                  )}
+                  {product.stock && product.stock > 0 && product.stock < 10 && (
+                    <span className="absolute top-2 right-2 bg-red-600/90 text-white text-xs px-2 py-1 rounded-sm">
+                      كمية محدودة
+                    </span>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="text-xl font-bold text-gray-100 mb-2 font-cairo">{product.name}</h3>
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
+                </div>
               </div>
-              <div className="p-5 flex flex-col h-full">
-                <h3 className="text-xl font-bold text-gray-100 mb-2 font-cairo">{product.name}</h3>
-                <p className="text-gray-400 text-sm mb-4 line-clamp-2 flex-grow">{product.description}</p>
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gold-900/30">
-                  <span className="text-gold-400 font-bold text-lg">{product.price.toLocaleString()} ريال</span>
+
+              <div className="p-5 pt-0 mt-auto">
+                <div className="flex items-center justify-between pt-4 border-t border-gold-900/30">
+                  <span className="text-gold-400 font-bold text-lg">{product.price ? product.price.toLocaleString() : 0} ريال</span>
                   <button 
                     onClick={() => setSelectedProduct(product)}
-                    className="bg-gold-700 hover:bg-gold-600 text-white p-2 rounded-sm transition-colors flex items-center gap-2"
+                    className="bg-gold-600 hover:bg-gold-500 text-white px-4 py-2 rounded-sm transition-colors flex items-center gap-2 cursor-pointer font-bold shadow-md"
                   >
                     <ShoppingBag size={18} />
-                    <span className="text-sm">طلب</span>
+                    <span>طلب</span>
                   </button>
                 </div>
               </div>
@@ -128,11 +133,11 @@ export default function CategoryPage() {
             </p>
             <div className="flex justify-between items-center bg-black p-4 rounded-sm mb-6 border border-neutral-800">
               <span className="text-gray-400">السعر:</span>
-              <span className="text-xl font-bold text-gold-500">{selectedProduct.price.toLocaleString()} ريال</span>
+              <span className="text-xl font-bold text-gold-500">{selectedProduct.price ? selectedProduct.price.toLocaleString() : 0} ريال</span>
             </div>
             <div className="flex gap-4">
               <a 
-                href={`https://wa.me/967775363086?text=مرحباً، أود طلب المنتج: ${selectedProduct.name} (السعر: ${selectedProduct.price} ريال)`}
+                href={`https://wa.me/967775363086?text=${encodeURIComponent(`مرحباً، أود طلب المنتج: ${selectedProduct.name} (السعر: ${selectedProduct.price || 0} ريال)`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setSelectedProduct(null)}
