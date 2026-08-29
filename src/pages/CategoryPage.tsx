@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Product, Category } from '../types';
@@ -132,7 +132,7 @@ export default function CategoryPage() {
             </div>
             <div className="flex gap-4">
               <a 
-                href={`https://wa.me/967774182285?text=مرحباً، أود طلب المنتج: ${selectedProduct.name} (السعر: ${selectedProduct.price} ريال)`}
+                href={`https://wa.me/967775363086?text=مرحباً، أود طلب المنتج: ${selectedProduct.name} (السعر: ${selectedProduct.price} ريال)`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setSelectedProduct(null)}
