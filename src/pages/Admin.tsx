@@ -3,13 +3,13 @@ import { db, auth } from '../firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { Product, Category } from '../types';
-import { Package, Tag, Settings, LogOut, Plus, Trash2, Edit2, Users } from 'lucide-react';
+import { Package, Tag, Settings, LogOut, Plus, Trash2, Edit2, Users, BarChart } from 'lucide-react';
 
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'admins'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'admins' | 'visitors'>('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [adminsList, setAdminsList] = useState<{email: string}[]>([]);
@@ -219,6 +219,7 @@ export default function Admin() {
         <button onClick={() => setActiveTab('products')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'products' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Package size={20} /> المنتجات</button>
         <button onClick={() => setActiveTab('categories')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'categories' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Tag size={20} /> الأقسام</button>
         <button onClick={() => setActiveTab('admins')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'admins' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Users size={20} /> المدراء</button>
+        <button onClick={() => setActiveTab('visitors')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'visitors' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><BarChart size={20} /> الإحصائيات</button>
         <button onClick={() => setActiveTab('settings')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'settings' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Settings size={20} /> الإعدادات</button>
         <button onClick={handleLogout} className="flex items-center gap-3 p-3 mt-auto text-red-400"><LogOut size={20} /> خروج</button>
       </aside>
@@ -306,6 +307,24 @@ export default function Admin() {
           </div>
         )}
 
+        {activeTab === 'visitors' && (
+          <div className="text-white h-full flex flex-col">
+            <h3 className="text-2xl font-bold mb-4">إحصائيات الزوار (سرية ومباشرة)</h3>
+            <div className="bg-black border border-gold-900/30 p-4 rounded-sm mb-6 text-gray-300 text-sm">
+              <p>هذه الشاشة مخفية وتظهر لك وحدك. لعرض التفاصيل الحقيقية (المدينة، الجهاز، مصدر الزيارة)، قم بتسجيل الدخول إلى حساب التتبع الخاص بك (مثل Statcounter أو Google Analytics) من خلال هذه النافذة دون الحاجة لمغادرة الموقع.</p>
+            </div>
+            <div className="flex-1 bg-neutral-900 border border-neutral-700 rounded-sm overflow-hidden min-h-[400px]">
+              <iframe 
+                src="https://statcounter.com/login/" 
+                width="100%" 
+                height="100%" 
+                className="border-none"
+                title="لوحة تتبع الزوار"
+              ></iframe>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'settings' && (
           <div className="text-white">
             <h3 className="text-2xl font-bold mb-4">الإعدادات</h3>
@@ -315,4 +334,4 @@ export default function Admin() {
       </main>
     </div>
   );
-            }
+                            }
