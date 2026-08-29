@@ -310,17 +310,21 @@ export default function Admin() {
         {activeTab === 'visitors' && (
           <div className="text-white h-full flex flex-col">
             <h3 className="text-2xl font-bold mb-4">إحصائيات الزوار (سرية ومباشرة)</h3>
-            <div className="bg-black border border-gold-900/30 p-4 rounded-sm mb-6 text-gray-300 text-sm">
-              <p>هذه الشاشة مخفية وتظهر لك وحدك. لعرض التفاصيل الحقيقية (المدينة، الجهاز، مصدر الزيارة)، قم بتسجيل الدخول إلى حساب التتبع الخاص بك (مثل Statcounter أو Google Analytics) من خلال هذه النافذة دون الحاجة لمغادرة الموقع.</p>
-            </div>
-            <div className="flex-1 bg-neutral-900 border border-neutral-700 rounded-sm overflow-hidden min-h-[400px]">
-              <iframe 
-                src="https://statcounter.com/login/" 
-                width="100%" 
-                height="100%" 
-                className="border-none"
-                title="لوحة تتبع الزوار"
-              ></iframe>
+            <div className="bg-black border border-gold-900/30 p-8 rounded-sm mb-6 text-center shadow-lg mt-4">
+              <BarChart size={56} className="mx-auto text-gold-500 mb-4" />
+              <h4 className="text-xl text-gray-100 mb-2">بوابة التحليلات المتقدمة</h4>
+              <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto leading-relaxed">
+                لحماية بيانات متجرك وتجاوز حظر شبكة الإنترنت، تم ربط الإحصائيات خارجياً. 
+                اضغط على الأزرار أدناه لفتح لوحة التحكم ورؤية (من دخل، موقعه، ونوع جهازه) بشكل آمن ومباشر.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-sm transition-colors flex items-center justify-center gap-2">
+                    📊 فتح إحصاءات جوجل
+                  </a>
+                  <a href="https://statcounter.com/login" target="_blank" rel="noopener noreferrer" className="bg-gold-600 hover:bg-gold-700 text-white font-bold py-3 px-6 rounded-sm transition-colors flex items-center justify-center gap-2">
+                    📈 فتح نظام Statcounter
+                  </a>
+              </div>
             </div>
           </div>
         )}
@@ -334,4 +338,5 @@ export default function Admin() {
       </main>
     </div>
   );
-                            }
+                      }
+                                                                                                                         
