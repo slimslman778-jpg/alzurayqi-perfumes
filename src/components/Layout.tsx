@@ -1,3 +1,8 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { Outlet, Link } from 'react-router-dom';
 import { Menu, X, MessageCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -89,7 +94,7 @@ export default function Layout() {
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>العنوان: اليمن، صنعاء، شارع جمال</li>
                 <li>البريد: alialzorike@gmail.com</li>
-                <li>الهاتف: +967 774182285</li>
+                <li>الهاتف: +967 775363086</li>
               </ul>
             </div>
             <div>
@@ -119,7 +124,7 @@ export default function Layout() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/967774182285"
+        href="https://wa.me/967775363086"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:bg-[#20bd5a] hover:scale-110 transition-all z-50 flex items-center justify-center"
