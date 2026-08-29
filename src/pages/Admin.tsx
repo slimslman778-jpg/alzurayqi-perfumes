@@ -3,13 +3,13 @@ import { db, auth } from '../firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { Product, Category } from '../types';
-import { Package, Tag, Settings, LogOut, Plus, Trash2, Edit2, Users, BarChart } from 'lucide-react';
+import { Package, Tag, Settings, LogOut, Plus, Trash2, Edit2, Users, BarChart, Image as ImageIcon } from 'lucide-react';
 
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'admins' | 'visitors'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'settings' | 'admins' | 'visitors' | 'storefront'>('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [adminsList, setAdminsList] = useState<{email: string}[]>([]);
@@ -20,6 +20,9 @@ export default function Admin() {
   
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDesc, setNewCategoryDesc] = useState('');
+
+  // حالة بيانات واجهة الموقع
+  const [storefront, setStorefront] = useState<{heroImage?: string, aboutImage?: string, aboutText?: string}>({});
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -62,6 +65,12 @@ export default function Admin() {
       const adminsSnap = await getDocs(collection(db, 'admins'));
       setAdminsList(adminsSnap.docs.map(d => ({ email: d.id })));
       
+      // جلب بيانات الواجهة
+      const storefrontSnap = await getDoc(doc(db, 'settings', 'storefront'));
+      if (storefrontSnap.exists()) {
+        setStorefront(storefrontSnap.data());
+      }
+
       setAuthLoading(false);
     } catch (e) {
       console.error("Fetch error:", e);
@@ -107,6 +116,45 @@ export default function Admin() {
       img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
+  };
+
+  // رفع صور الواجهة (دقة أعلى للواجهة)
+  const handleStorefrontImage = (e: React.ChangeEvent<HTMLInputElement>, field: 'heroImage' | 'aboutImage') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_DIM = 1200; // حجم أكبر للواجهة
+        if (width > height) {
+          if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+        } else {
+          if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setStorefront(prev => ({...prev, [field]: dataUrl}));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveStorefront = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await setDoc(doc(db, 'settings', 'storefront'), storefront);
+      alert('تم حفظ الواجهة بنجاح!');
+    } catch (error) {
+      console.error("Error saving storefront:", error);
+    }
   };
 
   const saveProduct = async (e: React.FormEvent) => {
@@ -163,7 +211,8 @@ export default function Admin() {
       console.error("Error deleting category:", error);
     }
   };
-    const addAdmin = async (e: React.FormEvent) => {
+
+  const addAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAdminEmail) return;
     try {
@@ -208,8 +257,7 @@ export default function Admin() {
       </div>
     );
   }
-
-  return (
+    return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8 min-h-[80vh]">
       <aside className="w-full md:w-64 bg-neutral-900 border border-gold-900/30 rounded-sm p-4 flex flex-col gap-2 h-fit sticky top-24">
         <div className="text-center mb-6 pb-6 border-b border-neutral-800">
@@ -218,6 +266,7 @@ export default function Admin() {
         </div>
         <button onClick={() => setActiveTab('products')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'products' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Package size={20} /> المنتجات</button>
         <button onClick={() => setActiveTab('categories')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'categories' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Tag size={20} /> الأقسام</button>
+        <button onClick={() => setActiveTab('storefront')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'storefront' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><ImageIcon size={20} /> واجهة الموقع</button>
         <button onClick={() => setActiveTab('admins')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'admins' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Users size={20} /> المدراء</button>
         <button onClick={() => setActiveTab('visitors')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'visitors' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><BarChart size={20} /> الإحصائيات</button>
         <button onClick={() => setActiveTab('settings')} className={`flex items-center gap-3 p-3 rounded-sm ${activeTab === 'settings' ? 'bg-gold-900/40 text-gold-400' : 'text-gray-400'}`}><Settings size={20} /> الإعدادات</button>
@@ -225,6 +274,41 @@ export default function Admin() {
       </aside>
 
       <main className="flex-1 bg-neutral-900/50 border border-gold-900/30 rounded-sm p-6">
+        
+        {activeTab === 'storefront' && (
+          <div>
+            <h3 className="text-2xl font-bold text-gray-100 mb-6">إدارة صور ونصوص الواجهة</h3>
+            <form onSubmit={saveStorefront} className="bg-neutral-900 p-6 border border-gold-900/30 rounded-sm space-y-6">
+              <div>
+                <label className="block text-gold-400 mb-2 font-bold">الخلفية العلوية للموقع (Hero Image):</label>
+                {storefront.heroImage && <img src={storefront.heroImage} alt="Hero" className="w-full h-48 object-cover mb-4 rounded-sm border border-neutral-700" />}
+                <input type="file" accept="image/*" onChange={e => handleStorefrontImage(e, 'heroImage')} className="w-full text-white" />
+              </div>
+
+              <div className="border-t border-neutral-800 pt-6">
+                <label className="block text-gold-400 mb-2 font-bold">صورة قسم المحل (قصتنا / من نحن):</label>
+                {storefront.aboutImage && <img src={storefront.aboutImage} alt="About" className="w-48 h-48 object-cover mb-4 rounded-sm border border-neutral-700" />}
+                <input type="file" accept="image/*" onChange={e => handleStorefrontImage(e, 'aboutImage')} className="w-full text-white" />
+              </div>
+
+              <div className="border-t border-neutral-800 pt-6">
+                <label className="block text-gold-400 mb-2 font-bold">نص وصف المحل:</label>
+                <textarea 
+                  rows={5}
+                  value={storefront.aboutText || ''} 
+                  onChange={e => setStorefront({...storefront, aboutText: e.target.value})} 
+                  placeholder="في الزريقي للعطور والبخور، نسعى دائماً لتقديم الأفضل..."
+                  className="w-full bg-black border border-neutral-700 p-3 text-white rounded-sm focus:border-gold-500 outline-none"
+                ></textarea>
+              </div>
+
+              <button type="submit" className="bg-gold-600 hover:bg-gold-500 transition-colors text-white px-6 py-3 rounded-sm w-full font-bold text-lg">
+                حفظ التعديلات للواجهة
+              </button>
+            </form>
+          </div>
+        )}
+
         {activeTab === 'products' && (
           <div>
             <div className="flex justify-between items-center mb-8">
@@ -338,5 +422,4 @@ export default function Admin() {
       </main>
     </div>
   );
-                      }
-                                                                                                                         
+}
